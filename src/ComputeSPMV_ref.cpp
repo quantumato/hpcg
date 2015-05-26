@@ -24,7 +24,7 @@
 #include <mpi.h>
 #include "Geometry.hpp"
 #include <cstdlib>
-#include "ExchangeHalo.hpp"
+#include "ExchangeHalo_Split.hpp"
 #endif
 
 #ifndef HPCG_NOOPENMP
@@ -58,66 +58,9 @@ int ComputeSPMV_ref( const SparseMatrix & A, Vector & x, Vector & y) {
 	// Halo Exchange
 	//
 #ifndef HPCG_NOMPI
-    //ExchangeHalo(A,x);
-
-  local_int_t localNumberOfRows = A.localNumberOfRows;
-  int num_neighbors = A.numberOfSendNeighbors;
-  local_int_t * receiveLength = A.receiveLength;
-  local_int_t * sendLength = A.sendLength;
-  int * neighbors = A.neighbors;
-  double * sendBuffer = A.sendBuffer;
-  local_int_t totalToBeSent = A.totalToBeSent;
-  local_int_t * elementsToSend = A.elementsToSend;
-
-  int size, rank; // Number of MPI processes, My process ID
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  //
-  //  first post receives, these are immediate receives
-  //  Do not wait for result to come, will do that at the
-  //  wait call below.
-  //
-
-  int MPI_MY_TAG = 99;
-
-  MPI_Request * request = new MPI_Request[2*num_neighbors];	//handles send and recv requests
-
-  //
-  // Externals are at end of locals
-  //
-  double * x_external = (double *) xv_halo + localNumberOfRows;
-
-  // Post receives first
-  // TODO: Thread this loop
-  for (int i = 0; i < num_neighbors; i++) {
-    local_int_t n_recv = receiveLength[i];
-    MPI_Irecv(x_external, n_recv, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request+i);
-    x_external += n_recv;
-  }
-
-
-  //
-  // Fill up send buffer
-  //
-
-  // TODO: Thread this loop
-  for (local_int_t i=num_neighbors; i<totalToBeSent+num_neighbors; i++) sendBuffer[i] = xv_halo[elementsToSend[i]];
-
-  //
-  // Send to each neighbor
-  //
-
-  // TODO: Thread this loop
-	// Send is non-blocking so the multiplication calculations can continue immediately
-	request += num_neighbors;
-  for (int i = 0; i < num_neighbors; i++) {
-    local_int_t n_send = sendLength[i];
-    MPI_Isend(sendBuffer, n_send, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request+i);
-    sendBuffer += n_send;
-  }
-
-#endif //#ifndef HPCG_NOMPI
+    ExchangeHalo_Split Exchanger(A,x);
+		Exchanger.ExchangeHalo_Init();
+#endif
 
   const double * const xv = x.values;
   double * const yv = y.values;
@@ -142,18 +85,9 @@ int ComputeSPMV_ref( const SparseMatrix & A, Vector & x, Vector & y) {
 	}
 
 #ifndef HPCG_NOMPI
-//
-// Complete the reads issued in ExchangeHalo.cpp
-// 
- MPI_Status *status = new MPI_Status[2*num_neighbors];
-
- MPI_Waitall(2*num_neighbors, request, status);
-  /*for (int i = 0; i < num_neighbors; i++) {
-    if ( MPI_Wait(request+i, &status) ) {
-      std::exit(-1); // TODO: have better error exit
-    }
-  }*/
+	Exchanger.ExchangeHalo_Finalize();
 #endif
+
 	// finish the row multiplications with the values in x that are external
   // and modified by the halo exchange
   for (local_int_t i=0; i< nrow; i++)  {
@@ -169,7 +103,5 @@ int ComputeSPMV_ref( const SparseMatrix & A, Vector & x, Vector & y) {
 		}
 	}
 	//deallocate memory
-	delete[] request;
-	delete[] status;
   return(0);
 }

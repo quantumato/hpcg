@@ -21,7 +21,7 @@
 #ifndef HPCG_NOMPI  // Compile this routine only if running in parallel
 #include <mpi.h>
 #include "Geometry.hpp"
-#include "ExchangeHalo.hpp"
+#include "ExchangeHalo_Split.hpp"
 #include <cstdlib>
 
 /*!
@@ -35,35 +35,7 @@
 
 //TODO finish up this class structure
 
-class ExchangeHalo
-{
-	private:
-		local_int_t localNumberOfRows;
-		local_int_t * receiveLength;
-		local_int_t * sendLength;
-		local_int_t totalToBeSent;
-		local_int_t * elementsToSend;
-
-		int num_neighbors;
-		int * neighbors;
-		int MPI_MY_TAG;
-		double * sendBuffer;
-		double * const xv;
-
-		double * x_external;
-		int size, rank; // Number of MPI processes, My process ID
-
-		MPI_Request * request;	//handles send and recv requests
-		MPI_Status *status;
-	public:
-		ExchangeHalo(const SparseMatrix& A, Vector& x);
-		~ExchangeHalo();
-
-		void ExchangeHalo_Init();
-		void ExchangeHalo_Finalize();
-};
-
-ExchangeHalo::ExchangeHalo(const SparseMatrix & A, Vector & x) : xv(x.values) {
+ExchangeHalo_Split::ExchangeHalo_Split(const SparseMatrix & A, Vector & x) : xv(x.values) {
 
 	//Extract matrix pieces
 
@@ -91,7 +63,7 @@ ExchangeHalo::ExchangeHalo(const SparseMatrix & A, Vector & x) : xv(x.values) {
 	x_external = (double *) xv + localNumberOfRows;
 }
 
-void ExchangeHalo::ExchangeHalo_Init()	{
+void ExchangeHalo_Split::ExchangeHalo_Init()	{
 	//
 	//  first post receives, these are immediate receives
 	//  Do not wait for result to come, will do that at the
@@ -128,16 +100,16 @@ void ExchangeHalo::ExchangeHalo_Init()	{
 
 }
 
-void ExchangeHalo::ExchangeHalo_Finalize()	{
+void ExchangeHalo_Split::ExchangeHalo_Finalize()	{
 	MPI_Status *status = new MPI_Status[2*num_neighbors];
 
 	//wait for all send and recv communication to complete
 	MPI_Waitall(2*num_neighbors, request, status);
 }
 
-ExchangeHalo::~ExchangeHalo()	{
-	delete[] request;
-	delete[] status;
+ExchangeHalo_Split::~ExchangeHalo_Split()	{
+//	delete[] request;
+//	delete[] status;
 }
 
 #endif //#ifndef HPCG_NOMPI
