@@ -21,7 +21,7 @@
 #ifndef HPCG_NOMPI  // Compile this routine only if running in parallel
 #include <mpi.h>
 #include "Geometry.hpp"
-#include "ExchangeHalo_Split.hpp"
+#include "ExchangeHaloRequest.hpp"
 #include <cstdlib>
 
 /*!
@@ -35,7 +35,7 @@
 
 //TODO finish up this class structure
 
-ExchangeHalo_Split::ExchangeHalo_Split(const SparseMatrix & A, Vector & x) : xv(x.values) {
+ExchangeHaloRequest::ExchangeHaloRequest(const SparseMatrix & A, Vector & x) : xv(x.values) {
 
 	//Extract matrix pieces
 
@@ -49,6 +49,7 @@ ExchangeHalo_Split::ExchangeHalo_Split(const SparseMatrix & A, Vector & x) : xv(
 	sendBuffer = A.sendBuffer;
 	totalToBeSent = A.totalToBeSent;
 	elementsToSend = A.elementsToSend;
+	totalRequests = num_neighbors*2;
 
 	int size, rank; // Number of MPI processes, My process ID
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -56,14 +57,14 @@ ExchangeHalo_Split::ExchangeHalo_Split(const SparseMatrix & A, Vector & x) : xv(
 
 	MPI_MY_TAG = 99;
 
-	request = new MPI_Request[2*num_neighbors];	//handles send and recv requests
+	request = new MPI_Request[totalRequests];	//handles send and recv requests
 	//
 	// Externals are at end of locals
 	//
 	x_external = (double *) xv + localNumberOfRows;
 }
 
-void ExchangeHalo_Split::ExchangeHalo_Init()	{
+void ExchangeHaloRequest::ExchangeHalo_Init()	{
 	//
 	//  first post receives, these are immediate receives
 	//  Do not wait for result to come, will do that at the
@@ -71,9 +72,10 @@ void ExchangeHalo_Split::ExchangeHalo_Init()	{
 	//
 
 	// TODO: Thread this loop
-	for (int i = 0; i < num_neighbors; i++) {
+	for (local_int_t i = 0; i < num_neighbors; i++) {
 		local_int_t n_recv = receiveLength[i];
-		MPI_Irecv(x_external, n_recv, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request+i);
+		MPI_Irecv(x_external, n_recv, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request);
+		request++;
 		x_external += n_recv;
 	}
 
@@ -92,22 +94,23 @@ void ExchangeHalo_Split::ExchangeHalo_Init()	{
 	// TODO: Thread this loop
 	// Send is non-blocking so the multiplication calculations can continue immediately
 	request += num_neighbors;
-	for (int i = 0; i < num_neighbors; i++) {
+	for (local_int_t i = 0; i < num_neighbors; i++) {
 		local_int_t n_send = sendLength[i];
-		MPI_Isend(sendBuffer, n_send, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request+i);
+		MPI_Isend(sendBuffer, n_send, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request);
+		request++;
 		sendBuffer += n_send;
 	}
 
 }
 
-void ExchangeHalo_Split::ExchangeHalo_Finalize()	{
-	MPI_Status *status = new MPI_Status[2*num_neighbors];
+void ExchangeHaloRequest::ExchangeHaloWaitall()	{
+	MPI_Status *status = new MPI_Status[totalRequests];
 
 	//wait for all send and recv communication to complete
-	MPI_Waitall(2*num_neighbors, request, status);
+	MPI_Waitall(totalRequests, request, status);
 }
 
-ExchangeHalo_Split::~ExchangeHalo_Split()	{
+ExchangeHaloRequest::~ExchangeHaloRequest()	{
 //	delete[] request;
 //	delete[] status;
 }

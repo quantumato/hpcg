@@ -24,7 +24,7 @@
 #include <mpi.h>
 #include "Geometry.hpp"
 #include <cstdlib>
-#include "ExchangeHalo_Split.hpp"
+#include "ExchangeHaloRequest.hpp"
 #endif
 
 #ifndef HPCG_NOOPENMP
@@ -52,13 +52,11 @@ int ComputeSPMV_ref( const SparseMatrix & A, Vector & x, Vector & y) {
   assert(x.localLength>=A.localNumberOfColumns); // Test vector lengths
   assert(y.localLength>=A.localNumberOfRows);
 
-  double * const xv_halo = x.values; // Stores the xvalues for the halo
-
 	//
 	// Halo Exchange
 	//
 #ifndef HPCG_NOMPI
-    ExchangeHalo_Split Exchanger(A,x);
+    ExchangeHaloRequest Exchanger(A,x);
 		Exchanger.ExchangeHalo_Init();
 #endif
 
@@ -85,7 +83,7 @@ int ComputeSPMV_ref( const SparseMatrix & A, Vector & x, Vector & y) {
 	}
 
 #ifndef HPCG_NOMPI
-	Exchanger.ExchangeHalo_Finalize();
+	Exchanger.ExchangeHaloWaitall();
 #endif
 
 	// finish the row multiplications with the values in x that are external

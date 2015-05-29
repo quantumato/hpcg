@@ -12,12 +12,12 @@
 // ***************************************************
 //@HEADER
 
-#ifndef EXCHANGEHALO_HPP
-#define EXCHANGEHALO_HPP
+#ifndef EXCHANGEHALOREQUEST_HPP
+#define EXCHANGEHALOREQUEST_HPP
 #include <mpi.h>
 #include "SparseMatrix.hpp"
 #include "Vector.hpp"
-class ExchangeHalo_Split
+class ExchangeHaloRequest
 {
 	private:
 		local_int_t localNumberOfRows;
@@ -27,6 +27,7 @@ class ExchangeHalo_Split
 		local_int_t * elementsToSend;
 
 		int num_neighbors;
+		local_int_t totalRequests;
 		int * neighbors;
 		int MPI_MY_TAG;
 		double * sendBuffer;
@@ -38,10 +39,10 @@ class ExchangeHalo_Split
 		MPI_Request * request;	//handles send and recv requests
 		MPI_Status *status;
 	public:
-		ExchangeHalo_Split(const SparseMatrix& A, Vector& x);
-		~ExchangeHalo_Split();
+		ExchangeHaloRequest(const SparseMatrix& A, Vector& x);
+		~ExchangeHaloRequest();
 
 		void ExchangeHalo_Init();
-		void ExchangeHalo_Finalize();
+		void ExchangeHaloWaitall();
 };
-#endif // EXCHANGEHALO_HPP
+#endif // EXCHANGEHALOREQUEST_HPP

@@ -43,6 +43,7 @@ using std::endl;
 #include "GenerateCoarseProblem.hpp"
 #include "SetupHalo.hpp"
 #include "ExchangeHalo.hpp"
+#include "ExchangeHaloRequest.hpp"
 #include "OptimizeProblem.hpp"
 #include "WriteProblem.hpp"
 #include "ReportResults.hpp"
@@ -101,8 +102,8 @@ int main(int argc, char * argv[]) {
   int ierr = 0;  // Used to check return codes on function calls
 
   ierr = CheckAspectRatio(0.125, nx, ny, nz, "local problem", rank==0);
-  if (ierr)
-    return ierr;
+  //if (ierr)
+  //  return ierr;
 
   /////////////////////////
   // Problem setup Phase //
@@ -117,8 +118,8 @@ int main(int argc, char * argv[]) {
   GenerateGeometry(size, rank, params.numThreads, nx, ny, nz, geom);
 
   ierr = CheckAspectRatio(0.125, geom->npx, geom->npy, geom->npz, "process grid", rank==0);
-  if (ierr)
-    return ierr;
+  //if (ierr)
+  //  return ierr;
 
   SparseMatrix A;
   InitializeSparseMatrix(A, geom);
