@@ -49,15 +49,25 @@ purposes of this benchmark.
  */
 int ComputeSPMV_ref( const SparseMatrix & A, Vector & x, Vector & y) {
 
+<<<<<<< HEAD
 	assert(x.localLength>=A.localNumberOfColumns); // Test vector lengths
 	assert(y.localLength>=A.localNumberOfRows);
+=======
+  assert(x.localLength>=A.localNumberOfColumns); // Test vector lengths
+  assert(y.localLength>=A.localNumberOfRows);
+>>>>>>> 74531baf625881e2ca1ecd03ffd28b91a867ee5b
 
 	//
 	// Halo Exchange
 	//
 #ifndef HPCG_NOMPI
+<<<<<<< HEAD
 	ExchangeHaloRequest Exchanger(A,x);
 	Exchanger.ExchangeHalo_Init();
+=======
+    ExchangeHaloRequest Exchanger(A,x);
+		Exchanger.ExchangeHalo_Init();
+>>>>>>> 74531baf625881e2ca1ecd03ffd28b91a867ee5b
 #endif
 
 	const double * const xv = x.values;
