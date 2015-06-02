@@ -57,11 +57,7 @@ ExchangeHaloRequest::ExchangeHaloRequest(const SparseMatrix & A, Vector & x) : x
 
 	MPI_MY_TAG = 99;
 
-<<<<<<< HEAD:src/ExchangeHaloRequest.cpp
 	requests = new MPI_Request[totalRequests];	//handles send and recv requests
-=======
-	request = new MPI_Request[totalRequests];	//handles send and recv requests
->>>>>>> 74531baf625881e2ca1ecd03ffd28b91a867ee5b:src/ExchangeHaloRequest.cpp
 	//
 	// Externals are at end of locals
 	//
@@ -78,12 +74,7 @@ void ExchangeHaloRequest::ExchangeHalo_Init()	{
 	// TODO: Thread this loop
 	for (local_int_t i = 0; i < num_neighbors; i++) {
 		local_int_t n_recv = receiveLength[i];
-<<<<<<< HEAD:src/ExchangeHaloRequest.cpp
 		MPI_Irecv(x_external, n_recv, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, requests+i);
-=======
-		MPI_Irecv(x_external, n_recv, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request);
-		request++;
->>>>>>> 74531baf625881e2ca1ecd03ffd28b91a867ee5b:src/ExchangeHaloRequest.cpp
 		x_external += n_recv;
 	}
 
@@ -101,24 +92,15 @@ void ExchangeHaloRequest::ExchangeHalo_Init()	{
 
 	// TODO: Thread this loop
 	// Send is non-blocking so the multiplication calculations can continue immediately
-<<<<<<< HEAD:src/ExchangeHaloRequest.cpp
 	for (local_int_t i = 0; i < num_neighbors; i++) {
 		local_int_t n_send = sendLength[i];
 		int offset = i + num_neighbors;
 		MPI_Isend(sendBuffer, n_send, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, requests+offset);	//when you send an array, does this use one or two requests?
-=======
-	request += num_neighbors;
-	for (local_int_t i = 0; i < num_neighbors; i++) {
-		local_int_t n_send = sendLength[i];
-		MPI_Isend(sendBuffer, n_send, MPI_DOUBLE, neighbors[i], MPI_MY_TAG, MPI_COMM_WORLD, request);
-		request++;
->>>>>>> 74531baf625881e2ca1ecd03ffd28b91a867ee5b:src/ExchangeHaloRequest.cpp
 		sendBuffer += n_send;
 	}
 }
 
 void ExchangeHaloRequest::ExchangeHaloWaitall()	{
-<<<<<<< HEAD:src/ExchangeHaloRequest.cpp
 	status = new MPI_Status[totalRequests];
 
 	//wait for all send and recv communication to complete
@@ -128,17 +110,6 @@ void ExchangeHaloRequest::ExchangeHaloWaitall()	{
 ExchangeHaloRequest::~ExchangeHaloRequest()	{
 	delete[] requests;
 	delete[] status;
-=======
-	MPI_Status *status = new MPI_Status[totalRequests];
-
-	//wait for all send and recv communication to complete
-	MPI_Waitall(totalRequests, request, status);
-}
-
-ExchangeHaloRequest::~ExchangeHaloRequest()	{
-//	delete[] request;
-//	delete[] status;
->>>>>>> 74531baf625881e2ca1ecd03ffd28b91a867ee5b:src/ExchangeHaloRequest.cpp
 }
 
 #endif //#ifndef HPCG_NOMPI
