@@ -1,0 +1,65 @@
+size = 1
+nx  = 104
+ny  = 104
+nz  = 104
+npx = 1
+npy = 1
+npz = 1
+For rank = 0
+ipx = 0
+ipy = 0
+ipz = 0
+size = 1
+nx  = 52
+ny  = 52
+nz  = 52
+npx = 1
+npy = 1
+npz = 1
+For rank = 0
+ipx = 0
+ipy = 0
+ipz = 0
+size = 1
+nx  = 26
+ny  = 26
+nz  = 26
+npx = 1
+npy = 1
+npz = 1
+For rank = 0
+ipx = 0
+ipy = 0
+ipz = 0
+size = 1
+nx  = 13
+ny  = 13
+nz  = 13
+npx = 1
+npy = 1
+npz = 1
+For rank = 0
+ipx = 0
+ipy = 0
+ipz = 0
+Total SpMV+MG timing phase execution time in main (sec) = 28.9251
+Initial Residual = 2309.68
+Iteration = 1   Scaled Residual = 0.185633
+Iteration = 2   Scaled Residual = 0.101525
+Iteration = 3   Scaled Residual = 0.0696706
+Iteration = 4   Scaled Residual = 0.0528114
+Iteration = 5   Scaled Residual = 0.042289
+Iteration = 6   Scaled Residual = 0.035058
+Iteration = 7   Scaled Residual = 0.0297656
+Iteration = 8   Scaled Residual = 0.0257176
+Iteration = 9   Scaled Residual = 0.0225152
+Iteration = 10   Scaled Residual = 0.0199069
+Iteration = 11   Scaled Residual = 0.0177286
+Iteration = 12   Scaled Residual = 0.0158879
+Iteration = 13   Scaled Residual = 0.0144147
+Iteration = 14   Scaled Residual = 0.01363
+Iteration = 15   Scaled Residual = 0.0139683
+Iteration = 16   Scaled Residual = 0.0131725
+Iteration = 17   Scaled Residual = 0.00751919
+Iteration = 18   Scaled Residual = 0.00410145
+Iteration = 19   Scaled Residual = 0.00390634

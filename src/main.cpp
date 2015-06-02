@@ -222,6 +222,10 @@ int main(int argc, char * argv[]) {
 #ifdef HPCG_DEBUG
   t1 = mytimer();
 #endif
+		int local_tmp = 1;
+		int global_tmp = 0;
+		MPI_Allreduce(&local_tmp, &global_tmp, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
   TestCGData testcg_data;
   testcg_data.count_pass = testcg_data.count_fail = 0;
   TestCG(A, data, b, x, testcg_data);
